@@ -22,7 +22,7 @@ class Tracker:
     _update_fns = dict()
 
     def __init__(self):
-        # NOTE Make this basically a singleton.
+        # NOTE(j_luo) Make this basically a singleton.
         self.__dict__ = self._shared_state
 
     def add_track(self, name: str, init_value: Any = 0):
