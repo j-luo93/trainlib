@@ -1,12 +1,9 @@
 from unittest import TestCase
 
-from .tracker import Tracker, reset_tracker
+from .tracker import FinishConditionException, Tracker
 
 
 class TestTracker(TestCase):
-
-    def setUp(self):
-        reset_tracker()
 
     def test_basic(self):
         tracker = Tracker()
@@ -47,3 +44,21 @@ class TestTracker(TestCase):
         tracker.add_update_fn('n_sentences', 'addx')
         tracker.update('n_sentences', 5)
         self.assertEqual(tracker.n_sentences, 5)
+
+    def test_when_to_finish(self):
+        tracker = Tracker()
+        tracker.add_track('epoch')
+        tracker.add_update_fn('epoch', 'add')
+        with self.assertRaises(FinishConditionException):
+            tracker.is_finished
+        tracker.finish_when('epoch', 10)
+        while not tracker.is_finished:
+            tracker.update()
+        self.assertEqual(tracker.epoch, 10)
+
+    def test_add_track_with_extra_args(self):
+        tracker = Tracker()
+        tracker.add_track('epoch', update_fn='add', finish_when=10)
+        while not tracker.is_finished:
+            tracker.update()
+        self.assertEqual(tracker.epoch, 10)

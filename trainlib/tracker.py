@@ -10,37 +10,71 @@ from collections import UserDict
 from typing import Any, Callable, Dict, Iterable, List, Union
 
 
-def reset_tracker():
-    tracker = Tracker()
-    tracker.reset_tracker()
+from dataclasses import dataclass
+
+
+@dataclass
+class WhenToFinish:
+    name: str
+    value: Any
+
+
+class FinishConditionException(Exception):
+    pass
+
+
+UpdateFn = Union[str, Callable[[], None]]
 
 
 class Tracker:
 
-    _shared_state = dict()
-    _attrs_to_track = set()
-    _update_fns = dict()
-
     def __init__(self):
-        # NOTE(j_luo) Make this basically a singleton.
-        self.__dict__ = self._shared_state
+        self._attrs = dict()
+        self._update_fns = dict()
+        self._when_to_finish = None
 
-    def add_track(self, name: str, init_value: Any = 0):
-        if name in self._attrs_to_track:
+    @property
+    def is_finished(self):
+        if self._when_to_finish is None:
+            raise FinishConditionException('Finishing condition not supplied.')
+        return self._attrs[self._when_to_finish.name] >= self._when_to_finish.value
+
+    def finish_when(self, name: str, value: Any):
+        if not self._when_to_finish is None:
+            raise FinishConditionException('Finishing condition already supplied.')
+        self._when_to_finish = WhenToFinish(name, value)
+
+    def add_track(self, name: str, init_value: Any = 0, *, update_fn: UpdateFn = None, finish_when: Any = None):
+        if name in self._attrs:
             raise NameError(f'A track named "{name}" already exists.')
 
-        self._attrs_to_track.add(name)
-        self.__dict__[name] = init_value
+        self._attrs[name] = init_value
+        if update_fn is not None:
+            self.add_update_fn(name, update_fn)
+        if finish_when is not None:
+            self.finish_when(name, finish_when)
 
-    def add_update_fn(self, name_to_update: str, update_fn: Union[str, Callable[[], None]]):
+    def __getattribute__(self, attr: str):
+        try:
+            return super().__getattribute__(attr)
+        except AttributeError as e:
+            if attr in self._attrs:
+                return self._attrs[attr]
+            else:
+                raise
+
+    def add_update_fn(self, name_to_update: str, update_fn: UpdateFn):
         if name_to_update in self._update_fns:
             raise NameError(f'An update function for {name_to_update} already exists.')
 
         if isinstance(update_fn, str):
+            def add(x=1):
+                self._attrs[name_to_update] += x
+
             if update_fn == 'add':
-                update_fn = lambda: setattr(self, name_to_update, getattr(self, name_to_update) + 1)
+                update_fn = add
             elif update_fn == 'addx':
-                update_fn = lambda x: setattr(self, name_to_update, getattr(self, name_to_update) + x)
+                update_fn = lambda x: add(x)
             else:
                 raise NotImplementedError(f'Not recognized update function named "{update_fn}"')
 
@@ -62,15 +96,9 @@ class Tracker:
             for name in names_to_update:
                 self._update_fns[name]()
 
-    def reset_tracker(self):
-        self._shared_state.clear()
-        # NOTE(j_luo) These are class variables.
-        self._attrs_to_track.clear()
-        self._update_fns.clear()
-
     @property
     def now_as_tuple(self):
-        return tuple(sorted(self.__dict__.items()))
+        return tuple(sorted(self._attrs.items()))
 
     @property
     def now(self):
