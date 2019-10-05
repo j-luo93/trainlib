@@ -1,2 +1,3 @@
-from .logger import log_this, create_logger
+from .logger import create_logger, log_this
+from .metrics import Metric, Metrics
 from .tracker import Tracker
