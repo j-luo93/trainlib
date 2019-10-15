@@ -4,6 +4,8 @@ import numpy as np
 import torch
 from prettytable import PrettyTable as pt
 
+# IDEA(j_luo) Rename this to Stats maybe?
+
 
 def plain(value):
     '''Convert tensors or numpy arrays to one scalar.'''
@@ -93,6 +95,7 @@ class Metric:
         self._w = 0
 
 
+# IDEA(j_luo) Add tests and simplify syntax.
 class Metrics:
 
     def __init__(self, *metrics):
@@ -107,6 +110,9 @@ class Metrics:
                 self._metrics = {metric.name: metric for metric in metrics}
         else:
             self._metrics = dict()
+
+    def items(self):
+        yield from self._metrics.items()
 
     def __str__(self):
         out = '\n'.join([f'{k}: {m}' for k, m in self._metrics.items()])
