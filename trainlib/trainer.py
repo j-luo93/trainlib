@@ -29,5 +29,5 @@ class Trainer(ABC):
             accum_metrics += metrics
             self.tracker.update()
 
-            self.check_metrics()
+            self.check_metrics(accum_metrics)
             self.save()

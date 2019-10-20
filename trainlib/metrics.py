@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from prettytable import PrettyTable as pt
 
-# IDEA(j_luo) Rename this to Stats maybe?
+# TODO(j_luo) Rename this to Stats maybe?
 
 
 def plain(value):
@@ -95,7 +95,7 @@ class Metric:
         self._w = 0
 
 
-# IDEA(j_luo) Add tests and simplify syntax.
+# TODO(j_luo) Add tests and simplify syntax.
 class Metrics:
 
     def __init__(self, *metrics):
