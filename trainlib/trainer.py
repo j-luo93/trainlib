@@ -1,7 +1,17 @@
+import random
 from abc import ABC, abstractmethod
 
-from .tracker import Tracker
+import numpy as np
+import torch
+
 from .metrics import Metrics
+from .tracker import Tracker
+
+
+def set_random_seeds(seed: int):
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.manual_seed(seed)
 
 
 class Trainer(ABC):
