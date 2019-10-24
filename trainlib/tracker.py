@@ -63,6 +63,9 @@ class Tracker:
             else:
                 raise
 
+    def load(self, name: str, value: Any):
+        self._attrs[name] = value
+
     def add_update_fn(self, name_to_update: str, update_fn: UpdateFn):
         if name_to_update in self._update_fns:
             raise NameError(f'An update function for {name_to_update} already exists.')
