@@ -6,11 +6,14 @@ A Tracker instance is responsible for:
 4. displaying a progress bar.
 """
 
+import warnings
 from collections import UserDict
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Union
 
+from deprecated import deprecated
 
-from dataclasses import dataclass
+from trainlib.trackable import Trackable
 
 
 @dataclass
@@ -29,9 +32,31 @@ UpdateFn = Union[str, Callable[[], None]]
 class Tracker:
 
     def __init__(self):
-        self._attrs = dict()
-        self._update_fns = dict()
-        self._when_to_finish = None
+        self._legacy_attrs = dict()
+        self._legacy_update_fns = dict()
+        self._legacy_when_to_finish = None
+
+        self._trackables: Dict[name, Trackable] = dict()
+
+    @property
+    @deprecated(reason='This is the old way of adding trackables.', action='once')
+    def _attrs(self):
+        return self._legacy_attrs
+
+    @property
+    @deprecated(reason='This is the old way of adding trackables.', action='once')
+    def _update_fns(self):
+        return self._legacy_update_fns
+
+    @property
+    @deprecated(reason='This is the old way of adding trackables.', action='once')
+    def _when_to_finish(self):
+        return self._legacy_when_to_finish
+
+    @_when_to_finish.setter
+    @deprecated(reason='This is the old way of adding trackables.', action='once')
+    def _when_to_finish(self, value):
+        self._legacy_when_to_finish = value
 
     @property
     def is_finished(self):
@@ -44,6 +69,7 @@ class Tracker:
             raise FinishConditionException('Finishing condition already supplied.')
         self._when_to_finish = WhenToFinish(name, value)
 
+    @deprecated(reason='use add_trackable', action='once')
     def add_track(self, name: str, init_value: Any = 0, *, update_fn: UpdateFn = None, finish_when: Any = None):
         if name in self._attrs:
             raise NameError(f'A track named "{name}" already exists.')
@@ -53,6 +79,11 @@ class Tracker:
             self.add_update_fn(name, update_fn)
         if finish_when is not None:
             self.finish_when(name, finish_when)
+
+    def add_trackable(self, name: str, total: int = None) -> Trackable:
+        trackable = Trackable(name, total=total)
+        self._trackables[name] = trackable
+        return trackable
 
     def __getattribute__(self, attr: str):
         try:
@@ -83,7 +114,13 @@ class Tracker:
 
         self._update_fns[name_to_update] = update_fn
 
-    def update(self, names_to_update: Union[str, List[str]] = None, value: Any = None):
+    def update(self, *names: str):
+        warnings.warn('You might need to use legacy_update.')
+        for name in names:
+            self._trackables[name].update()
+
+    @deprecated(reason='Calling legacy_update.', action='once')
+    def legacy_update(self, names_to_update: Union[str, List[str]] = None, value: Any = None):
         if value is not None and not isinstance(names_to_update, str):
             raise TypeError(f'Cannot specify a value for update, and a list of names to update at the same time.')
 

@@ -17,15 +17,21 @@ class PBarOutOfBound(Exception):
 class Trackable:
 
     _manager = enlighten.get_manager()
+    _instances = dict()
 
     @classmethod
     def reset_manager(cls):
         cls._manager = enlighten.get_manager()
+        cls._instances.clear()
 
     def __init__(self, name: str, total: int = None):
+        if name in self._instances:
+            raise ValueError(f'A trackable named "{name}" already exists.')
+
         self._name = name
         self._total = total
         self._pbar = self._manager.counter(desc=name, total=total)
+        self._instances[name] = self
 
     def update(self):
         self._pbar.update()
