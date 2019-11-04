@@ -8,6 +8,16 @@ from .metrics import Metrics
 from .tracker import Tracker
 
 
+def get_grad_norm(mod: torch.nn.Module) -> float:
+    total_norm = 0.0
+    for p in mod.parameters():
+        if p.grad is not None:
+            param_norm = p.grad.data.norm(2)
+            total_norm += param_norm.item() ** 2
+    total_norm = total_norm ** (1. / 2)
+    return total_norm
+
+
 def set_random_seeds(seed: int):
     np.random.seed(seed)
     random.seed(seed)
