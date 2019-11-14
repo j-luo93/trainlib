@@ -17,10 +17,9 @@ from typing import Any, Callable, Dict, Iterable, List, Union
 import enlighten
 from deprecated import deprecated
 
-
-# ---------------------------------------------------------------------------- #
-#                               Trackable section                              #
-# ---------------------------------------------------------------------------- #
+# ------------------------------------------------------------- #
+#                       Trackable section                       #
+# ------------------------------------------------------------- #
 
 
 def reset_all():
@@ -82,9 +81,9 @@ class Trackable:
     def value(self):
         return self._pbar.count
 
-# ---------------------------------------------------------------------------- #
-#                                Tracker section                               #
-# ---------------------------------------------------------------------------- #
+# ------------------------------------------------------------- #
+#                        Tracker section                        #
+# ------------------------------------------------------------- #
 
 
 @dataclass
@@ -172,9 +171,11 @@ class Tracker:
         except KeyError:
             raise AttributeError(f'No trackable named {attr}.')
 
+    @deprecated(reason='This is the old way of adding trackables.', action='once')
     def load(self, name: str, value: Any):
         self._attrs[name] = value
 
+    @deprecated(reason='This is the old way of adding trackables.', action='once')
     def add_update_fn(self, name_to_update: str, update_fn: UpdateFn):
         if name_to_update in self._update_fns:
             raise NameError(f'An update function for {name_to_update} already exists.')
@@ -215,9 +216,11 @@ class Tracker:
                 self._update_fns[name]()
 
     @property
+    @deprecated(reason='This is the old way of adding trackables.', action='once')
     def now_as_tuple(self):
         return tuple(sorted(self._attrs.items()))
 
     @property
+    @deprecated(reason='This is the old way of adding trackables.', action='once')
     def now(self):
         return '-'.join([f'{k}_{v}'for k, v in self.now_as_tuple])
