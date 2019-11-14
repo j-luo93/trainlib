@@ -8,6 +8,17 @@ from .metrics import Metrics
 from .tracker import Tracker
 
 
+def get_trainable_params(mod: torch.nn.Module, named: bool = True):
+    if named:
+        for name, param in mod.named_parameters():
+            if param.requires_grad:
+                yield name, param
+    else:
+        for param in mod.parameters():
+            if param.requires_grad:
+                yield param
+
+
 def get_grad_norm(mod: torch.nn.Module) -> float:
     total_norm = 0.0
     for p in mod.parameters():

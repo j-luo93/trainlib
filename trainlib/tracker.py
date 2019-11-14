@@ -8,15 +8,15 @@ A Tracker instance is responsible for:
 
 from __future__ import annotations
 
+import random
 import time
 import warnings
 from collections import UserDict
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, List, Union
+from typing import Any, Callable, Dict, Iterable, List, Sequence, Union
 
 import enlighten
 from deprecated import deprecated
-
 
 # ---------------------------------------------------------------------------- #
 #                               Trackable section                              #
@@ -93,6 +93,15 @@ class WhenToFinish:
     value: Any
 
 
+@dataclass
+class Task:
+    def __hash__(self):
+        return id(self)
+
+    def __eq__(self, other: Task):
+        return id(self) == id(other)
+
+
 class FinishConditionException(Exception):
     pass
 
@@ -108,6 +117,8 @@ class Tracker:
         self._legacy_when_to_finish = None
 
         self.trackables: Dict[name, Trackable] = dict()
+        self.tasks: List[Task] = list()
+        self.task_weights: List[Task] = list()
 
     @property
     @deprecated(reason='This is the old way of adding trackables.', action='once')
@@ -155,6 +166,20 @@ class Tracker:
         # NOTE(j_luo) self.trackables is actually handled by every Trackable constructor call.
         trackable = Trackable(name, total=total, tracker=self)
         return trackable
+
+    def add_task(self, task: Task, weight: float):
+        self.tasks.append(task)
+        self.task_weights.append(weight)
+
+    def add_tasks(self, tasks: Sequence[Task], weights: List[float]):
+        if len(tasks) != len(weights):
+            raise ValueError(f'Mismatched lengths from tasks ({len(tasks)}) and weights ({len(weights)}).')
+        for task, weight in zip(tasks, weights):
+            self.add_task(task, weight)
+
+    def draw_task(self) -> Task:
+        task = random.choices(self.tasks, weights=self.task_weights)[0]
+        return task
 
     def __getattribute__(self, attr: str):
         try:

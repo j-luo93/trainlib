@@ -1,3 +1,5 @@
+from collections import Counter
+from .tracker import Task
 from unittest import TestCase
 
 from deprecated import deprecated
@@ -123,3 +125,16 @@ class TestTracker(TestCase):
                 self.assertEqual(tracker.step, j + 1)
             tracker.update('epoch')
             self.assertEqual(tracker.epoch, i + 1)
+
+    def test_tasks(self):
+        tracker = Tracker()
+        tracker.add_trackable('step', total=1000)
+        task1 = Task()
+        task2 = Task()
+        tracker.add_tasks([task1, task2], [1.0, 0.5])
+        cnt = Counter()
+        for _ in range(1000):
+            task = tracker.draw_task()
+            cnt[task] += 1
+            tracker.update('step')
+        self.assertTrue(abs(2 - cnt[task1] / cnt[task2]) < 0.5)
