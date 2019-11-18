@@ -1,15 +1,15 @@
 from unittest import TestCase
 
-from .trackable import PBarOutOfBound, Trackable, reset_all
+from .trackable import PBarOutOfBound, CountTrackable, reset_all
 
 
-class TestTrackable(TestCase):
+class TestCountTrackable(TestCase):
 
     def setUp(self):
         reset_all()
 
     def test_update(self):
-        x = Trackable('step', total=10)
+        x = CountTrackable('step', total=10)
         for i in range(10):
             x.update()
             self.assertEqual(x.value, i + 1)
@@ -18,13 +18,13 @@ class TestTrackable(TestCase):
             x.update()
 
     def test_update_without_total(self):
-        x = Trackable('step')
+        x = CountTrackable('step', total=100)
         for i in range(100):
             x.update()
             self.assertEqual(x.value, i + 1)
 
     def test_nested(self):
-        x = Trackable('epoch', total=10)
+        x = CountTrackable('epoch', total=10)
         y = x.add_trackable('step', total=10)
         for i in range(10):
             for j in range(10):

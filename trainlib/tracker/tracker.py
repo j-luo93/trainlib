@@ -1,6 +1,6 @@
 """
 A Tracker instance is responsible for:
-1. tracking epochs, rounds, steps or any Trackable instances.
+1. tracking epochs, rounds, steps or any BaseTrackable instances.
 2. tracking some curriculum- or annealing-related hyperparameters.
 3. tracking metrics.
 4. displaying a progress bar (through trackables.)
@@ -12,7 +12,7 @@ import random
 from dataclasses import dataclass
 from typing import Dict, List, Sequence
 
-from .trackable import Trackable
+from .trackable import BaseTrackable, TrackableFactory
 
 
 @dataclass
@@ -30,13 +30,13 @@ class Tracker:
         self.tasks: List[Task] = list()
         self.task_weights: List[Task] = list()
 
-        self.trackables: Dict[str, Trackable] = dict()
+        self.trackables: Dict[str, BaseTrackable] = dict()
 
     def is_finished(self, name: str):
         return self.trackables[name].value >= self.trackables[name].total
 
-    def add_trackable(self, name: str, total: int = None) -> Trackable:
-        trackable = Trackable(name, total=total)
+    def add_trackable(self, name: str, *, total: int = None, agg_func: str = 'count') -> BaseTrackable:
+        trackable = TrackableFactory(name, total=total, agg_func=agg_func)
         self.trackables[name] = trackable
         return trackable
 
@@ -44,7 +44,7 @@ class Tracker:
 
         _trackables_to_update = dict()
 
-        def flatten(trackable: Trackable):
+        def flatten(trackable: BaseTrackable):
             _trackables_to_update[trackable.name] = trackable
             for child in trackable.children:
                 flatten(child)
