@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
-from typing import Dict, List, Sequence
+from typing import Any, Dict, List, Sequence
 
-from .trackable import BaseTrackable, TrackableFactory
+from .trackable import (BaseTrackable, MaxTrackable, TrackableFactory,
+                        TrackableUpdater)
 
 
 @dataclass
@@ -39,6 +40,9 @@ class Tracker:
         trackable = TrackableFactory(name, total=total, agg_func=agg_func)
         self.trackables[name] = trackable
         return trackable
+
+    def add_max_trackable(self, name: str) -> MaxTrackable:
+        return self.add_trackable(name, agg_func='max')
 
     def ready(self):
 
@@ -73,6 +77,8 @@ class Tracker:
         except KeyError:
             raise AttributeError(f'No trackable named {attr}.')
 
-    def update(self, *names: str):
-        for name in names:
-            self.trackables[name].update()
+    def update(self, name: str, *, value: Any = None) -> bool:
+        """Update a trackable, and return whether it is updated."""
+        trackable = self.trackables[name]
+        updater = TrackableUpdater(trackable)
+        return updater.update(value=value)

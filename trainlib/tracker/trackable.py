@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import enlighten
 
@@ -126,3 +126,15 @@ class TrackableFactory:
     def reset_all(cls):
         cls._instances.clear()
         CountTrackable.reset_all()
+
+
+class TrackableUpdater:
+
+    def __init__(self, trackable: BaseTrackable):
+        self._trackable = trackable
+
+    def update(self, *, value: Any = None):
+        try:
+            return self._trackable.update()
+        except TypeError:
+            return self._trackable.update(value)

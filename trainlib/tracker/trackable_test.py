@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from .trackable import PBarOutOfBound, CountTrackable, reset_all
+from .trackable import PBarOutOfBound, CountTrackable, reset_all, MaxTrackable
 
 
 class TestCountTrackable(TestCase):
@@ -32,3 +32,15 @@ class TestCountTrackable(TestCase):
                 self.assertEqual(y.value, j + 1)
             x.update()
             self.assertEqual(x.value, i + 1)
+
+
+class TestMaxTrackable(TestCase):
+
+    def setUp(self):
+        reset_all()
+
+    def test_update(self):
+        x = MaxTrackable('score')
+        for i in range(10):
+            x.update(i)
+        self.assertEqual(x.value, 9)
