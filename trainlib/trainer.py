@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 from .metrics import Metrics
-from .tracker import Tracker
+from .tracker.tracker import Tracker
 
 
 def get_trainable_params(mod: torch.nn.Module, named: bool = True):
