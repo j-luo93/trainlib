@@ -82,3 +82,8 @@ class Tracker:
         trackable = self.trackables[name]
         updater = TrackableUpdater(trackable)
         return updater.update(value=value)
+
+    def reset(self, name: str):
+        """Reset a trackable."""
+        trackable = self.trackables[name]
+        trackable.reset()

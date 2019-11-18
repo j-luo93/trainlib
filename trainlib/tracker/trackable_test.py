@@ -33,6 +33,13 @@ class TestCountTrackable(TestCase):
             x.update()
             self.assertEqual(x.value, i + 1)
 
+    def test_reset(self):
+        x = CountTrackable('epoch', total=10)
+        for i in range(5):
+            x.update()
+        x.reset()
+        self.assertEqual(x.value, 0)
+
 
 class TestMaxTrackable(TestCase):
 
@@ -44,3 +51,10 @@ class TestMaxTrackable(TestCase):
         for i in range(10):
             x.update(i)
         self.assertEqual(x.value, 9)
+
+    def test_reset(self):
+        x = MaxTrackable('score')
+        for i in range(5):
+            x.update(i)
+        x.reset()
+        self.assertEqual(x.value, -float('inf'))
